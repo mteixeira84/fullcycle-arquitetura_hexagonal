@@ -19,7 +19,7 @@ type ProductInterface interface {
 	GetName() string
 	GetStatus() string
 	GetPrice() float64
-	//ChangePrice(price float64) error
+	ChangePrice(price float64) error
 }
 
 type ProductServiceInterface interface {
@@ -48,15 +48,15 @@ const (
 )
 
 type Product struct {
-	ID     string `valid:"uuidv4"`
-	Name   string `valid:"required"`
+	ID     string  `valid:"uuidv4"`
+	Name   string  `valid:"required"`
 	Price  float64 `valid:"float,optional"`
-	Status string `valid:"required"`
+	Status string  `valid:"required"`
 }
 
 func NewProduct() *Product {
 	product := Product{
-		ID: uuid.NewV4().String(),
+		ID:     uuid.NewV4().String(),
 		Status: DISABLED,
 	}
 	return &product
@@ -75,7 +75,7 @@ func (p *Product) IsValid() (bool, error) {
 		return false, errors.New("the price must be greater or equal zero")
 	}
 
-	_, err  := govalidator.ValidateStruct(p)
+	_, err := govalidator.ValidateStruct(p)
 	if err != nil {
 		return false, err
 	}
@@ -88,6 +88,18 @@ func (p *Product) Enable() error {
 		return nil
 	}
 	return errors.New("the price must be greater than zero to enable the product")
+}
+
+func (p *Product) ChangePrice(price float64) error {
+	if p.Price < 0 {
+		return errors.New("price only accept positive numbers")
+	}
+	p.Price = price
+	_, err := p.IsValid()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *Product) Disable() error {
